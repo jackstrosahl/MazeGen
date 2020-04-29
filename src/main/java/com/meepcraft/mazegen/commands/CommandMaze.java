@@ -133,7 +133,7 @@ public class CommandMaze implements CommandExecutor
                 }
                 // Not used to generate, but remove walls
                 GeneratingMaze generatingMaze = new GeneratingMaze(main, main.mazes.get(args[1]),
-                        sender, "", false);
+                        null, "", false);
                 generatingMaze.removeWalls();
                 main.cancelTask(args[1]);
                 main.mazes.remove(args[1]);
@@ -166,6 +166,7 @@ public class CommandMaze implements CommandExecutor
                     return true;
                 }
                 data.setInterval(interval);
+                main.saveData();
                 main.makeGenTimer(args[1], false);
                 if (interval == 0)
                 {
@@ -181,17 +182,18 @@ public class CommandMaze implements CommandExecutor
                 if (!checkPlayer(player, sender)) return true;
                 if (!main.mazesInProgress.containsKey(player.getUniqueId()))
                 {
-                    player.sendMessage(Main.PREFIX + "You are not currently creating a maze!  /maze create");
+                    player.sendMessage(Main.PREFIX + "You are not currently creating or editing a maze!  /maze create");
                     return true;
                 }
                 MazeData data = main.mazesInProgress.remove(player.getUniqueId());
+                editing.remove(player.getUniqueId());
                 if (data.getTop() != null)
                 {
-                    GeneratingMaze generatingMaze = new GeneratingMaze(main, data, main.getServer().getConsoleSender(),
+                    GeneratingMaze generatingMaze = new GeneratingMaze(main, data, null,
                             "", false);
                     generatingMaze.removeWalls();
                 }
-                player.sendMessage(Main.PREFIX + "Maze creation cancelled.");
+                player.sendMessage(Main.PREFIX + "Maze creation/edit cancelled.");
                 break;
             }
             case "gen":
@@ -227,6 +229,9 @@ public class CommandMaze implements CommandExecutor
                     return true;
                 }
                 data.getOpenings().clear();
+                GeneratingMaze generatingMaze = new GeneratingMaze(main, data, null,
+                        "", false);
+                generatingMaze.run();
                 main.mazesInProgress.put(player.getUniqueId(), data);
                 editing.put(player.getUniqueId(), args[1]);
                 player.sendMessage(Main.PREFIX+"Openings removed, you can now specify new ones by clicking" +

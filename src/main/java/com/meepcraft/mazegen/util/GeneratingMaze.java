@@ -98,10 +98,10 @@ public class GeneratingMaze
 
     public MazePos posFromXZ(int x, int z)
     {
-        int row = Math.round((x-minX-pathSize-offsetX)/(pathSize*2.0f));
-        int col = Math.round((z-minZ-pathSize-offsetZ)/(pathSize*2.0f));
+        int col= Math.round((x-minX-pathSize-offsetX)/(pathSize*2.0f));
+        int row = Math.round((z-minZ-pathSize-offsetZ)/(pathSize*2.0f));
         if(col<-1||col>cols||row<-1||row>rows) throw new InvalidParameterException();
-        return new MazePos(row, col);
+        return new MazePos(col, row);
     }
 
     public MazePos posFromXZ(Location loc)
@@ -193,7 +193,7 @@ public class GeneratingMaze
             }
             if(count==rows)
             {
-                creator.sendMessage(bisected);
+                sendMessage(bisected);
                 return false;
             }
         }
@@ -207,7 +207,7 @@ public class GeneratingMaze
             }
             if(count==cols)
             {
-                creator.sendMessage(bisected);
+                sendMessage(bisected);
                 return false;
             }
         }
@@ -268,10 +268,16 @@ public class GeneratingMaze
             }
         }
         editSession.commit();
-        String reason = fromTimer?" after "+interval+" minutes (converted to ticks).":
+        String reason = fromTimer ? " after " + interval + " minutes (converted to ticks)." :
                 ", this was triggered manually.";
-        creator.sendMessage(Main.PREFIX+name+" has regenerated"+ reason);
+        sendMessage(Main.PREFIX + name + " has regenerated" + reason);
         return true;
+    }
+
+    private void sendMessage(String message)
+    {
+        if(creator==null) return;
+        creator.sendMessage(message);
     }
 
     private void setBlocks(BlockVector minPos, BlockVector maxPos)

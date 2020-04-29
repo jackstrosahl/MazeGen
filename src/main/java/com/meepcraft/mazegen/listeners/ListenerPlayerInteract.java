@@ -34,7 +34,7 @@ public class ListenerPlayerInteract implements Listener
         return "("+String.join(",",
                 loc.getBlockX() + "", loc.getBlockY() + "", loc.getBlockZ() + "")+")";
     }
-
+    private ChatColor highlight = ChatColor.GREEN;
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e)
     {
@@ -47,7 +47,7 @@ public class ListenerPlayerInteract implements Listener
         {
             Location loc = e.getClickedBlock().getLocation();
             player.sendMessage(Main.PREFIX + "Set first corner of the maze floor to " + locString(loc) + ".");
-            player.sendMessage(Main.PREFIX +"Next, you can click the opposite corner of the maze-floor.");
+            player.sendMessage(Main.PREFIX +highlight+"Next, you can click the opposite corner of the maze-floor.");
             data.setFirstCorner(loc);
         }
         else if (data.getSecondCorner() == null)
@@ -68,7 +68,7 @@ public class ListenerPlayerInteract implements Listener
                 return;
             }
             player.sendMessage(Main.PREFIX + "Set second corner of maze to " + locString(loc) + ".");
-            player.sendMessage(Main.PREFIX+"Next, click a block that represents the Y level of the top of " +
+            player.sendMessage(Main.PREFIX+highlight+"Next, click a block that represents the Y level of the top of " +
                     "the maze, and what block the maze walls are.");
             player.sendMessage(Main.PREFIX+ ChatColor.RED+"NOTE: This will cause the maze to generate.  " +
                     "Ensure you have WG regions defined with maze-gen:DENY inside the maze if necessary.");
@@ -98,10 +98,10 @@ public class ListenerPlayerInteract implements Listener
             player.sendMessage(Main.PREFIX + "Set the maze wall to " + baseBlock.toString()
                     + " at Y level " + loc.getBlockY() + ".  ");
 
-            GeneratingMaze generatingMaze = new GeneratingMaze(main, data, main.getServer().getConsoleSender(),
-                    "An in progress", false);
+            GeneratingMaze generatingMaze = new GeneratingMaze(main, data, null,
+                    "", false);
             generatingMaze.run();
-            player.sendMessage(Main.PREFIX+"Next, you can specify entrances/exits by clicking" +
+            player.sendMessage(Main.PREFIX+highlight+"Next, you can specify entrances/exits by clicking" +
                     " on a wall that should not generate.");
         }
         else
@@ -111,7 +111,7 @@ public class ListenerPlayerInteract implements Listener
             int z = e.getClickedBlock().getZ();
             // Useful to get coords from, also regenerate when we specify an opening
             GeneratingMaze generatingMaze = new GeneratingMaze(main, data,
-                    main.getServer().getConsoleSender(),"An in progress", false);
+                    null,"", false);
             MazePos lastPos;
             try
             {

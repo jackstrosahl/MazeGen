@@ -23,7 +23,7 @@ import java.util.*;
 
 public class Main extends JavaPlugin
 {
-    public static final String PREFIX = ChatColor.RED + "[MazeGen] "+ChatColor.GREEN;
+    public static final String PREFIX = ChatColor.DARK_RED + "[MazeGen] "+ChatColor.DARK_AQUA;
 
     public HashMap<String, MazeData> mazes;
     public HashMap<UUID, MazeData> mazesInProgress;
