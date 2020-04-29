@@ -32,4 +32,10 @@ public class MazePos
         MazePos otherPos = (MazePos) other;
         return col==otherPos.col&&row==otherPos.row;
     }
+
+    @Override
+    public String toString()
+    {
+        return "("+col+","+row+")";
+    }
 }

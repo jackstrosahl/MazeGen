@@ -2,7 +2,9 @@ package com.meepcraft.mazegen.listeners;
 
 import com.meepcraft.mazegen.Main;
 import com.meepcraft.mazegen.types.GeneratingMaze;
+import com.meepcraft.mazegen.types.MazeCell;
 import com.meepcraft.mazegen.types.MazeData;
+import com.meepcraft.mazegen.types.MazePos;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
@@ -102,7 +104,9 @@ public class ListenerPlayerInteract implements Listener
         }
         else
         {
-
+            HashMap<MazePos, MazeCell> openings = data.getOpenings();
+            GeneratingMaze generatingMaze = new GeneratingMaze(main, data, main.getServer().getConsoleSender());
+            player.sendMessage(generatingMaze.posFromXZ(e.getClickedBlock().getLocation()).toString());
         }
     }
 }

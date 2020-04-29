@@ -14,6 +14,7 @@ import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -85,6 +86,18 @@ public class GeneratingMaze
     public int zFromRow(int row)
     {
         return minZ + offsetZ+ (row * pathSize * 2) + pathSize;
+    }
+
+    public MazePos posFromXZ(int x, int z)
+    {
+        int row = (int)((x-minX-pathSize-offsetX)/(pathSize*2.0));
+        int col = (int)((z-minZ-pathSize-offsetZ)/(pathSize*2.0));
+        return new MazePos(row, col);
+    }
+
+    public MazePos posFromXZ(Location loc)
+    {
+        return posFromXZ(loc.getBlockX(), loc.getBlockZ());
     }
 
     public boolean run()

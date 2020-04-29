@@ -5,9 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.meepcraft.mazegen.commands.CommandMaze;
 import com.meepcraft.mazegen.listeners.ListenerPlayerInteract;
+import com.meepcraft.mazegen.types.GeneratingMaze;
 import com.meepcraft.mazegen.types.MazeData;
 import com.meepcraft.mazegen.types.MazeTask;
 import com.meepcraft.mazegen.types.YamlInJson;
+import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
@@ -26,6 +28,7 @@ public class Main extends JavaPlugin
 
     public HashMap<String, MazeData> mazes;
     public HashMap<UUID, MazeData> mazesInProgress;
+
     public HashMap<String, Integer> tasks;
 
     public static String DATA_PATH = "data.json";
@@ -37,10 +40,15 @@ public class Main extends JavaPlugin
         // Initialize Fields
         builder = new GsonBuilder();
         builder.registerTypeAdapter(Location.class, new YamlInJson());
+        builder.registerTypeAdapter(BaseBlock.class, new YamlInJson());
         mazesInProgress = new HashMap<>();
         tasks = new HashMap<>();
-        mazes = new HashMap<>();
         loadData();
+        if(mazes==null)
+        {
+            getLogger().info(PREFIX+"Data file was invalid.");
+            mazes = new HashMap<>();
+        }
         scheduleTasks();
         getCommand("maze").setExecutor(new CommandMaze(this));
         getServer().getPluginManager().registerEvents(new ListenerPlayerInteract(this), this);
@@ -64,9 +72,7 @@ public class Main extends JavaPlugin
         {
             FileReader reader = new FileReader(dataFile);
             mazes = gson.fromJson(reader, new TypeToken<HashMap<String, MazeData>>(){}.getType());
-//            YamlConfiguration config = new YamlConfiguration();
-//            config.load(dataFile);
-//            mazes = (HashMap<String, MazeData>) config.get("mazes");
+            reader.close();
         }
         catch(Exception e)
         {
@@ -88,9 +94,6 @@ public class Main extends JavaPlugin
             FileWriter writer = new FileWriter(dataFile);
             gson.toJson(mazes, writer);
             writer.close();
-//            YamlConfiguration config = new YamlConfiguration();
-//            config.createSection("mazes", mazes);
-//            config.save(dataFile);
         }
         catch(Exception e)
         {
@@ -113,6 +116,7 @@ public class Main extends JavaPlugin
         if(mazes.containsKey(name))
         {
             MazeData data = mazes.get(name);
+            if(data.getInterval()==0) return;
             MazeTask task = new MazeTask(this, data, getServer().getConsoleSender());
             task.runTaskTimer(this, 0, (long)(data.getInterval()*60*20));
             tasks.put(name, task.getTaskId());

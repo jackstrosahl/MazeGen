@@ -1,16 +1,11 @@
 package com.meepcraft.mazegen.types;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.meepcraft.mazegen.Main;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import org.bukkit.Location;
-import org.bukkit.configuration.serialization.ConfigurationSerializable;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
+
 
 import java.util.HashMap;
-import java.util.Map;
-
 import static com.meepcraft.mazegen.listeners.ListenerPlayerInteract.locString;
 
 public class MazeData
@@ -21,31 +16,9 @@ public class MazeData
 
     private double interval=0;
     private BaseBlock wallBlock;
-    private HashMap<MazePos, MazeCell> openings= new HashMap<>();;
+    private HashMap<MazePos, MazeCell> openings = new HashMap<>();;
 
     public MazeData() {}
-
-    public MazeData(Map<String, Object> map)
-    {
-        firstCorner= (Location) map.getOrDefault("firstCorner", null);
-        secondCorner= (Location) map.getOrDefault("secondCorner", null);
-        top= (Location) map.getOrDefault("top", null);
-        interval = (double) map.getOrDefault("interval", 0);
-        wallBlock = (BaseBlock) map.getOrDefault("wallBlock", null);
-        openings = (HashMap<MazePos, MazeCell>) map.getOrDefault("openings", null);
-    }
-
-
-
-    public MazeData(Location firstCorner, Location secondCorner, Location top, double interval, BaseBlock wallBlock, HashMap<MazePos, MazeCell> openings)
-    {
-        this.firstCorner = firstCorner;
-        this.secondCorner = secondCorner;
-        this.top = top;
-        this.interval = interval;
-        this.wallBlock = wallBlock;
-        this.openings = openings;
-    }
 
     public Location getTop()
     {

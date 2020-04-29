@@ -25,7 +25,10 @@ public class YamlInJson implements JsonSerializer, JsonDeserializer
             JsonObject obj = json.getAsJsonObject();
             return new BaseBlock(obj.get("id").getAsShort(),obj.get("data").getAsShort());
         }
-        throw new InvalidParameterException("Can't deserialize: "+typeOfT.getTypeName());
+        else
+        {
+            throw new InvalidParameterException("Can't deserialize: " + typeOfT.getTypeName());
+        }
     }
 
     @Override
@@ -46,18 +49,11 @@ public class YamlInJson implements JsonSerializer, JsonDeserializer
             BaseBlock block = (BaseBlock) src;
             out.add("id", new JsonPrimitive(block.getId()));
             out.add("data", new JsonPrimitive(block.getData()));
+            return out;
         }
-        throw new InvalidParameterException();
-//        if(src instanceof ConfigurationSerializable)
-//        {
-//            ConfigurationSerializable serializable = (ConfigurationSerializable) src;
-//            JsonObject out = new JsonObject();
-//            for(Map.Entry<String, Object> pair: serializable.serialize().entrySet())
-//            {
-//                out.add(pair.getKey(),this.serialize(pair.getValue(),pair.getValue().getClass(),context));
-//            }
-//            return out;
-//        }
-//        return context.serialize(src);
+        else
+        {
+            throw new InvalidParameterException();
+        }
     }
 }
