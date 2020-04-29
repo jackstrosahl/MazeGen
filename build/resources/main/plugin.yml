@@ -1,0 +1,14 @@
+name: MazeGen
+main: com.meepcraft.mazegen.Main
+version: '1.0'
+author: jackstrosahl
+depend:
+- WorldGuard
+- WorldEdit
+commands:
+  maze:
+    description: Manage an area for Mazes
+    permission: mazegen.admin
+permissions:
+  mazegen:
+    admin: {}

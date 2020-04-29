@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id 'fr.il_totore.manadrop' version '0.3-SNAPSHOT'
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+}
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+group 'com.meepcraft'
+version '1.0'
+
+repositories {
+    mavenCentral()
+
+    maven {url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'}
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
+    maven { url "https://maven.enginehub.org/repo/" }
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT'
+    compileOnly 'com.sk89q.worldguard:worldguard-legacy:6.2'
+    compileOnly 'com.sk89q.worldedit:worldedit-bukkit:6.1.5'
+    compileOnly 'com.sk89q.worldedit:worldedit-core:6.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.10.0'
+}
+
+shadowJar {
+    shadowJar {
+        setArchivesBaseName('MazeGen')
+        setClassifier('')
+    }
+}
+
+// ManaDrop plugin.yml generation
+processResources.finalizedBy(spigotPlugin)
+
+spigot {
+    desc {
+        named project.name //Default: the project name
+        version project.version //Default: the project version
+        authors 'jackstrosahl'
+        main 'com.meepcraft.mazegen.Main'
+        depend 'WorldGuard','WorldEdit'
+
+        command {
+            named 'maze'
+            description 'Manage an area for Mazes'
+            permission 'mazegen.admin'
+        }
+
+        permission {
+            named 'mazegen.admin'
+        }
+    }
+}
+
+
+task copyJarToBin(type: Copy) {
+    copy {
+        from 'build\\libs\\MazeGen-'+project.version+'.jar'
+        into "C:\\Users\\Stros\\Documents\\Test Servers\\1.12.2 Again\\plugins"
+    }
+}
