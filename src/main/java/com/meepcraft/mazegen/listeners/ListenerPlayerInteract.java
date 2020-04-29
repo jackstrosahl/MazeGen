@@ -1,10 +1,10 @@
 package com.meepcraft.mazegen.listeners;
 
 import com.meepcraft.mazegen.Main;
-import com.meepcraft.mazegen.types.GeneratingMaze;
-import com.meepcraft.mazegen.types.MazeCell;
-import com.meepcraft.mazegen.types.MazeData;
-import com.meepcraft.mazegen.types.MazePos;
+import com.meepcraft.mazegen.util.GeneratingMaze;
+import com.meepcraft.mazegen.util.MazeCell;
+import com.meepcraft.mazegen.util.MazeData;
+import com.meepcraft.mazegen.util.MazePos;
 import com.sk89q.worldedit.BlockVector;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
@@ -98,7 +98,8 @@ public class ListenerPlayerInteract implements Listener
             player.sendMessage(Main.PREFIX + "Set the maze wall to " + baseBlock.toString()
                     + " at Y level " + loc.getBlockY() + ".  ");
 
-            GeneratingMaze generatingMaze = new GeneratingMaze(main, data, e.getPlayer());
+            GeneratingMaze generatingMaze = new GeneratingMaze(main, data, main.getServer().getConsoleSender(),
+                    "An in progress", false);
             generatingMaze.run();
             player.sendMessage(Main.PREFIX+"Next, you can specify entrances/exits by clicking" +
                     " on a wall that should not generate.");
@@ -108,27 +109,29 @@ public class ListenerPlayerInteract implements Listener
             HashMap<MazePos, MazeCell> openings = data.getOpenings();
             int x = e.getClickedBlock().getX();
             int z = e.getClickedBlock().getZ();
-            GeneratingMaze generatingMaze = new GeneratingMaze(main, data, main.getServer().getConsoleSender());
-            MazePos pos;
+            // Useful to get coords from, also regenerate when we specify an opening
+            GeneratingMaze generatingMaze = new GeneratingMaze(main, data,
+                    main.getServer().getConsoleSender(),"An in progress", false);
+            MazePos lastPos;
             try
             {
-                pos = generatingMaze.posFromXZ(x,z);
+                lastPos = generatingMaze.posFromXZ(x,z);
             }
             catch(InvalidParameterException err)
             {
                 player.sendMessage(Main.PREFIX+"You cannot select a block outside the maze.");
                 return;
             }
-            int ox = generatingMaze.xFromCol(pos.col);
-            int oz = generatingMaze.zFromRow(pos.row);
+            int ox = generatingMaze.xFromCol(lastPos.col);
+            int oz = generatingMaze.zFromRow(lastPos.row);
             int diffX = x-ox;
             int diffZ = z-oz;
             int absX = Math.abs(diffX);
             int absZ = Math.abs(diffZ);
             MazeCell lastCell = new MazeCell();
             MazeCell curCell = new MazeCell();
-            int nextCol = pos.col;
-            int nextRow = pos.row;
+            int curCol = lastPos.col;
+            int curRow = lastPos.row;
             if(absZ<absX)
             {
                 // Pos X
@@ -136,14 +139,14 @@ public class ListenerPlayerInteract implements Listener
                 {
                     lastCell.connectedPosX();
                     curCell.connectedNegX();
-                    nextCol++;
+                    curCol++;
                 }
                 // Neg X
                 else if(diffX<0)
                 {
                     lastCell.connectedNegX();
                     curCell.connectedPosX();
-                    nextCol--;
+                    curCol--;
                 }
             }
             else if(absX<absZ)
@@ -153,14 +156,14 @@ public class ListenerPlayerInteract implements Listener
                 {
                     lastCell.connectedPosZ();
                     curCell.connectedNegZ();
-                    nextRow++;
+                    curRow++;
                 }
                 // Neg Z
                 else if(diffZ<0)
                 {
                     lastCell.connectedNegZ();
                     curCell.connectedPosZ();
-                    nextRow--;
+                    curRow--;
                 }
             }
             else
@@ -168,10 +171,15 @@ public class ListenerPlayerInteract implements Listener
                 player.sendMessage(Main.PREFIX+"Unable to determine what wall you've selected, please try again.");
                 return;
             }
-            openings.put(pos, lastCell);
-            openings.put(new MazePos(nextCol,nextRow), curCell);
+            MazeCell lastCellToSet = openings.getOrDefault(lastPos, new MazeCell());
+            lastCellToSet.booleanOr(lastCell);
+            openings.put(lastPos, lastCellToSet);
+            MazePos nextPos = new MazePos(curCol,curRow);
+            MazeCell curCellToSet = openings.getOrDefault(nextPos, new MazeCell());
+            curCellToSet.booleanOr(curCell);
+            openings.put(nextPos, curCellToSet);
             player.sendMessage(Main.PREFIX+"Added opening, regenerating.  You can finish anytime by running " +
-                    "/maze save <name>.");
+                    "/maze save <name>.  If you're editing this maze, instead run /maze save.");
             generatingMaze.run();
         }
     }

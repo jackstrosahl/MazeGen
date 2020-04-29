@@ -5,7 +5,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.meepcraft.mazegen.commands.CommandMaze;
 import com.meepcraft.mazegen.listeners.ListenerPlayerInteract;
-import com.meepcraft.mazegen.types.*;
+import com.meepcraft.mazegen.util.*;
+import com.meepcraft.mazegen.util.json.MapJson;
+import com.meepcraft.mazegen.util.json.YamlInJson;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.flags.StateFlag;
@@ -44,10 +46,10 @@ public class Main extends JavaPlugin
         loadData();
         if(mazes==null)
         {
-            getLogger().info(PREFIX+"Data file was invalid.");
+            getLogger().info(PREFIX+"Data file was invalid or empty.");
             mazes = new HashMap<>();
         }
-        scheduleTasks();
+        scheduleTasks(true);
         getCommand("maze").setExecutor(new CommandMaze(this));
         getServer().getPluginManager().registerEvents(new ListenerPlayerInteract(this), this);
     }
@@ -68,6 +70,7 @@ public class Main extends JavaPlugin
         File dataFile = new File(getDataFolder(), DATA_PATH);
         try
         {
+            saveResource(DATA_PATH, false);
             FileReader reader = new FileReader(dataFile);
             mazes = gson.fromJson(reader, new TypeToken<HashMap<String, MazeData>>(){}.getType());
             reader.close();
@@ -100,23 +103,25 @@ public class Main extends JavaPlugin
         }
     }
 
-    public void scheduleTasks()
+    public void scheduleTasks(boolean regen)
     {
         for(String name:mazes.keySet())
         {
-            makeGenTimer(name);
+            makeGenTimer(name, regen);
         }
     }
 
-    public void makeGenTimer(String name)
+    public void makeGenTimer(String name, boolean regen)
     {
         cancelTask(name);
         if(mazes.containsKey(name))
         {
             MazeData data = mazes.get(name);
             if(data.getInterval()==0) return;
-            MazeTask task = new MazeTask(this, data, getServer().getConsoleSender());
-            task.runTaskTimer(this, 0, (long)(data.getInterval()*60*20));
+            MazeTask task = new MazeTask(this, data, getServer().getConsoleSender(), name);
+            long ticks = (long)(data.getInterval()*60*20);
+            long delay = regen?0:ticks;
+            task.runTaskTimer(this, delay, ticks);
             tasks.put(name, task.getTaskId());
         }
     }
