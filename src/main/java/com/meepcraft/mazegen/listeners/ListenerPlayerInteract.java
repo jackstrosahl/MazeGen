@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.security.InvalidParameterException;
 import java.util.HashMap;
 
 public class ListenerPlayerInteract implements Listener
@@ -105,8 +106,73 @@ public class ListenerPlayerInteract implements Listener
         else
         {
             HashMap<MazePos, MazeCell> openings = data.getOpenings();
+            int x = e.getClickedBlock().getX();
+            int z = e.getClickedBlock().getZ();
             GeneratingMaze generatingMaze = new GeneratingMaze(main, data, main.getServer().getConsoleSender());
-            player.sendMessage(generatingMaze.posFromXZ(e.getClickedBlock().getLocation()).toString());
+            MazePos pos;
+            try
+            {
+                pos = generatingMaze.posFromXZ(x,z);
+            }
+            catch(InvalidParameterException err)
+            {
+                player.sendMessage(Main.PREFIX+"You cannot select a block outside the maze.");
+                return;
+            }
+            int ox = generatingMaze.xFromCol(pos.col);
+            int oz = generatingMaze.zFromRow(pos.row);
+            int diffX = x-ox;
+            int diffZ = z-oz;
+            int absX = Math.abs(diffX);
+            int absZ = Math.abs(diffZ);
+            MazeCell lastCell = new MazeCell();
+            MazeCell curCell = new MazeCell();
+            int nextCol = pos.col;
+            int nextRow = pos.row;
+            if(absZ<absX)
+            {
+                // Pos X
+                if(diffX>0)
+                {
+                    lastCell.connectedPosX();
+                    curCell.connectedNegX();
+                    nextCol++;
+                }
+                // Neg X
+                else if(diffX<0)
+                {
+                    lastCell.connectedNegX();
+                    curCell.connectedPosX();
+                    nextCol--;
+                }
+            }
+            else if(absX<absZ)
+            {
+                // Pos Z
+                if(diffZ>0)
+                {
+                    lastCell.connectedPosZ();
+                    curCell.connectedNegZ();
+                    nextRow++;
+                }
+                // Neg Z
+                else if(diffZ<0)
+                {
+                    lastCell.connectedNegZ();
+                    curCell.connectedPosZ();
+                    nextRow--;
+                }
+            }
+            else
+            {
+                player.sendMessage(Main.PREFIX+"Unable to determine what wall you've selected, please try again.");
+                return;
+            }
+            openings.put(pos, lastCell);
+            openings.put(new MazePos(nextCol,nextRow), curCell);
+            player.sendMessage(Main.PREFIX+"Added opening, regenerating.  You can finish anytime by running " +
+                    "/maze save <name>.");
+            generatingMaze.run();
         }
     }
 }

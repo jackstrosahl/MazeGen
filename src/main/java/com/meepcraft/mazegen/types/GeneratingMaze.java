@@ -22,6 +22,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.security.InvalidParameterException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class GeneratingMaze
     private final int rows;
     private HashSet<MazePos> unvisited;
     private MazeCell[][] cells;
+    private HashMap<MazePos, MazeCell> openings;
     private SecureRandom random;
     private EditSession editSession;
     private CommandSender creator;
@@ -76,6 +78,7 @@ public class GeneratingMaze
         this.creator=creator;
         this.unvisited = new HashSet<>();
         this.main = main;
+        this.openings = data.getOpenings();
     }
 
     public int xFromCol(int col)
@@ -90,8 +93,9 @@ public class GeneratingMaze
 
     public MazePos posFromXZ(int x, int z)
     {
-        int row = (int)((x-minX-pathSize-offsetX)/(pathSize*2.0));
-        int col = (int)((z-minZ-pathSize-offsetZ)/(pathSize*2.0));
+        int row = Math.round((x-minX-pathSize-offsetX)/(pathSize*2.0f));
+        int col = Math.round((z-minZ-pathSize-offsetZ)/(pathSize*2.0f));
+        if(col<-1||col>cols||row<-1||row>rows) throw new InvalidParameterException();
         return new MazePos(row, col);
     }
 
@@ -196,31 +200,33 @@ public class GeneratingMaze
             }
             addPath(path);
         }
+        MazeCell blank = new MazeCell();
         for(int col = 0;col<cols;col++)
         {
             for (int row = 0; row < rows; row++)
             {
                 MazeCell cur = cells[col][row];
-                if(cur==null) continue;
+                if(cur==null) cur = blank;
                 int ox = xFromCol(col);
                 int oz = zFromRow(row);
 
-                if(cur.isConnectedPosX())
+                MazeCell override = openings.getOrDefault(new MazePos(col, row), blank);
+                if(cur.isConnectedPosX()||override.isConnectedPosX())
                 {
                     setBlocks(new BlockVector(ox+pathSize,floorLevel+1,oz-wallSize),
                            new BlockVector(ox+pathSize, topLevel,oz+wallSize));
                 }
-                if(cur.isConnectedNegX())
+                if(cur.isConnectedNegX()||override.isConnectedNegX())
                 {
                     setBlocks(new BlockVector(ox-pathSize,floorLevel+1,oz-wallSize),
                             new BlockVector(ox-pathSize, topLevel,oz+wallSize));
                 }
-                if(cur.isConnectedPosZ())
+                if(cur.isConnectedPosZ()||override.isConnectedPosZ())
                 {
                     setBlocks(new BlockVector(ox-wallSize,floorLevel+1,oz+pathSize),
                             new BlockVector(ox+wallSize, topLevel,oz+pathSize));
                 }
-                if(cur.isConnectedNegZ())
+                if(cur.isConnectedNegZ()||override.isConnectedNegZ())
                 {
                     setBlocks(new BlockVector(ox-wallSize,floorLevel+1,oz-pathSize),
                             new BlockVector(ox+wallSize, topLevel,oz-pathSize));
@@ -258,12 +264,6 @@ public class GeneratingMaze
 
     private void addPath(List<MazePos> path)
     {
-//        String out="";
-//        for(MazePos pos:path)
-//        {
-//            out+=pos.toString();
-//        }
-//        out+="\n";
         for(int i=1;i<path.size();i++)
         {
             MazePos lastPos = path.get(i-1);
@@ -273,37 +273,31 @@ public class GeneratingMaze
             int diffCol = curPos.col-lastPos.col;
             int diffRow = curPos.row-lastPos.row;
 
-            //out+=",";
             // Pos X
             if(diffCol==1)
             {
                 lastCell.connectedPosX();
                 curCell.connectedNegX();
-                //out+="Pos X";
             }
             // Neg X
             else if(diffCol==-1)
             {
                 lastCell.connectedNegX();
                 curCell.connectedPosX();
-                //out+="Neg X";
             }
             // Pos Z
             else if(diffRow==1)
             {
                 lastCell.connectedPosZ();
                 curCell.connectedNegZ();
-                //out+="Pos Z";
             }
             // Neg Z
             else if(diffRow==-1)
             {
                 lastCell.connectedNegZ();
                 curCell.connectedPosZ();
-                //out+="Neg Z";
             }
         }
-        //System.out.println(out);
         unvisited.removeAll(path);
     }
 

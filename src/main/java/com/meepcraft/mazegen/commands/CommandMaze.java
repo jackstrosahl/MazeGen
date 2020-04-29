@@ -83,8 +83,8 @@ public class CommandMaze implements CommandExecutor
                 } else
                 {
                     player.sendMessage(Main.PREFIX + args[1] + " will regenerate every " + interval + " minutes.");
-                    main.makeGenTimer(args[1]);
                 }
+                main.makeGenTimer(args[1]);
                 break;
             }
             case "cancel":
