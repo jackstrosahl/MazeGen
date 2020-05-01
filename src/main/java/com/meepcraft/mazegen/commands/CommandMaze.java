@@ -32,6 +32,7 @@ public class CommandMaze implements CommandExecutor
                 "BEFORE removing any WG regions with flag 'maze-gen':DENY in this maze.");
         helpStrings.put("interval"," <maze> <interval>: Sets <maze> to regenerate every <interval> minute(s).");
         helpStrings.put("gen"," <maze>: Regenerates <maze> immediately.");
+        helpStrings.put("list",": lists all mazes.");
         helpStrings.put("<maze>",": Displays information on <maze>.");
     }
 
@@ -72,6 +73,7 @@ public class CommandMaze implements CommandExecutor
         if(args.length==0)
         {
             sender.sendMessage(getHelpString(""));
+            return true;
         }
         switch(args[0].toLowerCase())
         {
@@ -196,6 +198,12 @@ public class CommandMaze implements CommandExecutor
                 player.sendMessage(Main.PREFIX + "Maze creation/edit cancelled.");
                 break;
             }
+            case "list":
+                if(main.mazes.size()==0)
+                    sender.sendMessage(Main.PREFIX+"No mazes exist!  Create one with /maze create.");
+                else
+                    sender.sendMessage(Main.PREFIX+"The following mazes exist: "+String.join(", ",main.mazes.keySet())+".");
+                break;
             case "gen":
             {
                 if (args.length < 2)

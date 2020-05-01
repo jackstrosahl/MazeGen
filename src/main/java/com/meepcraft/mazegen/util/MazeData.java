@@ -78,7 +78,7 @@ public class MazeData
     @Override
     public String toString()
     {
-        return String.join("\n"+ Main.PREFIX,"World: "+firstCorner.getWorld().getName(),
+        return String.join("\n"+ Main.PREFIX,Main.PREFIX+"World: "+firstCorner.getWorld().getName(),
                 "Maze Floor: "+locString(firstCorner)+"-"+locString(secondCorner),
                 "Walls: Y level: "+top.getBlockY()+", Block: "+wallBlock.toString(),
                 "Interval: "+interval+" minutes",
