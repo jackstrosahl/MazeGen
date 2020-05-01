@@ -10,7 +10,9 @@ import com.meepcraft.mazegen.util.json.MapJson;
 import com.meepcraft.mazegen.util.json.YamlInJson;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldguard.bukkit.WGBukkit;
+import com.sk89q.worldguard.protection.flags.Flag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.flags.registry.FlagConflictException;
 import com.sk89q.worldguard.protection.flags.registry.FlagRegistry;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -59,9 +61,22 @@ public class Main extends JavaPlugin
     {
         FlagRegistry registry = WGBukkit.getPlugin().getFlagRegistry();
         // The plugin will not load if this flag is taken.
-        StateFlag flag = new StateFlag("maze-gen", true);
-        registry.register(flag);
-        MAZE_GEN_FLAG = flag;
+        String flagName = "maze-gen";
+        StateFlag flag = new StateFlag(flagName, true);
+        try
+        {
+            registry.register(flag);
+            MAZE_GEN_FLAG = flag;
+        }
+        catch(IllegalStateException e)
+        {
+            Flag<?> existing = registry.get(flagName);
+            if (existing instanceof StateFlag) {
+                MAZE_GEN_FLAG = (StateFlag) existing;
+            } else {
+                throw new FlagConflictException("Flag "+flagName+" already taken, we cannot load!");
+            }
+        }
     }
 
     public void loadData()
