@@ -1,17 +1,9 @@
 package com.meepcraft.mazegen.util;
 
-import java.util.Map;
-
 public class MazePos
 {
     public int col;
     public int row;
-
-    public MazePos(Map<String, Object> map)
-    {
-        col = (int)map.get("col");
-        row = (int)map.get("row");
-    }
 
     public MazePos(int col, int row)
     {

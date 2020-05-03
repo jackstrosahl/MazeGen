@@ -16,7 +16,7 @@ public class MazeData
 
     private double interval=0;
     private BaseBlock wallBlock;
-    private HashMap<MazePos, MazeCell> openings = new HashMap<>();;
+    private HashMap<MazePos, MazeCell> openings = new HashMap<>();
 
     public MazeData() {}
 

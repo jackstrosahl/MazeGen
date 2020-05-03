@@ -6,8 +6,7 @@ import com.google.gson.reflect.TypeToken;
 import com.meepcraft.mazegen.commands.CommandMaze;
 import com.meepcraft.mazegen.listeners.ListenerPlayerInteract;
 import com.meepcraft.mazegen.util.*;
-import com.meepcraft.mazegen.util.json.MapJson;
-import com.meepcraft.mazegen.util.json.YamlInJson;
+import com.meepcraft.mazegen.util.json.JsonAdapter;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldguard.bukkit.WGBukkit;
 import com.sk89q.worldguard.protection.flags.Flag;
@@ -40,9 +39,9 @@ public class Main extends JavaPlugin
     {
         // Initialize Fields
         builder = new GsonBuilder();
-        builder.registerTypeAdapter(Location.class, new YamlInJson());
-        builder.registerTypeAdapter(BaseBlock.class, new YamlInJson());
-        builder.registerTypeAdapter(new TypeToken<HashMap<MazePos, MazeCell>>(){}.getType(), new MapJson());
+        builder.registerTypeAdapter(Location.class, new JsonAdapter());
+        builder.registerTypeAdapter(BaseBlock.class, new JsonAdapter());
+        builder.enableComplexMapKeySerialization();
         mazesInProgress = new HashMap<>();
         tasks = new HashMap<>();
         loadData();

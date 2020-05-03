@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import java.security.InvalidParameterException;
 import java.util.Map;
 
-public class YamlInJson implements JsonSerializer, JsonDeserializer
+public class JsonAdapter implements JsonSerializer, JsonDeserializer
 {
 
     @Override
