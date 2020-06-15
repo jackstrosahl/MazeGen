@@ -14,11 +14,25 @@ public class MazeData
     private Location secondCorner;
     private Location top;
 
-    private double interval=0;
+
+
+    private int pathSize =1;
     private BaseBlock wallBlock;
     private HashMap<MazePos, MazeCell> openings = new HashMap<>();
 
     public MazeData() {}
+
+    private double interval=0;
+
+    public int getPathSize()
+    {
+        return pathSize;
+    }
+
+    public void setPathSize(int pathSize)
+    {
+        this.pathSize = pathSize;
+    }
 
     public Location getTop()
     {

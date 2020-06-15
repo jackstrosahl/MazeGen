@@ -37,8 +37,8 @@ public class GeneratingMaze
     private final int floorLevel;
     private final int topLevel;
     private final BaseBlock wallBlock;
-    private final int pathSize;
     private final int wallSize;
+    private final int pathSize;
     private final int cols;
     private final int rows;
     private HashSet<MazePos> unvisited;
@@ -67,16 +67,17 @@ public class GeneratingMaze
         this.floorLevel = data.getFirstCorner().getBlockY();
         this.topLevel = data.getTop().getBlockY();
         this.wallBlock = data.getWallBlock();
-        //Path Size is defined as 'radius'
-        //Path size of 1=1 Wide paths.
-        //Path size of 2=3 Wide Paths.
-        this.pathSize = 2;
-        if(pathSize<1) throw new InvalidParameterException();
-        this.wallSize=pathSize-1;
-        this.cols = (int)((maxX-minX)/(pathSize*2.0));
-        this.rows = (int)((maxZ-minZ)/(pathSize*2.0));
-        this.offsetX = ((maxX-minX+1)-(cols*pathSize*2))/2;
-        this.offsetZ = ((maxZ-minZ+1)-(rows*pathSize*2))/2;
+        //Wall Size is defined as 'radius' (not including center block)
+        //Wall size of 0=1 Wide paths.
+        //Wall size of 1=3 Wide Paths.
+        this.pathSize =data.getPathSize();
+        if(pathSize <0) throw new InvalidParameterException();
+        this.wallSize = this.pathSize +1;
+
+        this.cols = (int)((maxX-minX)/(wallSize *2.0));
+        this.rows = (int)((maxZ-minZ)/(wallSize *2.0));
+        this.offsetX = ((maxX-minX+1)-(cols* wallSize *2))/2;
+        this.offsetZ = ((maxZ-minZ+1)-(rows* wallSize *2))/2;
         this.creator=creator;
         this.unvisited = new HashSet<>();
         this.main = main;
@@ -88,18 +89,18 @@ public class GeneratingMaze
 
     public int xFromCol(int col)
     {
-        return minX + offsetX + (col * pathSize * 2) + pathSize;
+        return minX + offsetX + (col * wallSize * 2) + wallSize;
     }
 
     public int zFromRow(int row)
     {
-        return minZ + offsetZ+ (row * pathSize * 2) + pathSize;
+        return minZ + offsetZ+ (row * wallSize * 2) + wallSize;
     }
 
     public MazePos posFromXZ(int x, int z)
     {
-        int col= Math.round((x-minX-pathSize-offsetX)/(pathSize*2.0f));
-        int row = Math.round((z-minZ-pathSize-offsetZ)/(pathSize*2.0f));
+        int col= Math.round((x-minX- wallSize -offsetX)/(wallSize *2.0f));
+        int row = Math.round((z-minZ- wallSize -offsetZ)/(wallSize *2.0f));
         if(col<-1||col>cols||row<-1||row>rows) throw new InvalidParameterException();
         return new MazePos(col, row);
     }
@@ -122,14 +123,14 @@ public class GeneratingMaze
                 int ox = xFromCol(col);
                 int oz = zFromRow(row);
                 ProtectedRegion test = new ProtectedCuboidRegion("dummy",
-                        new BlockVector(ox-pathSize,floorLevel,oz-pathSize),
-                        new BlockVector(ox+pathSize,topLevel, oz+pathSize));
+                        new BlockVector(ox- wallSize,floorLevel,oz- wallSize),
+                        new BlockVector(ox+ wallSize,topLevel, oz+ wallSize));
                 boolean valid = true;
                 ApplicableRegionSet set = regions.getApplicableRegions(test);
                 if(set.testState(null, Main.MAZE_GEN_FLAG))
                 {
-                    setBlocks(new BlockVector(ox - pathSize, floorLevel + 1, oz - pathSize),
-                            new BlockVector(ox + pathSize, topLevel, oz + pathSize),
+                    setBlocks(new BlockVector(ox - wallSize, floorLevel + 1, oz - wallSize),
+                            new BlockVector(ox + wallSize, topLevel, oz + wallSize),
                             true, new BaseBlock(0));
                 }
             }
@@ -154,8 +155,8 @@ public class GeneratingMaze
                 int ox = xFromCol(col);
                 int oz = zFromRow(row);
                 ProtectedRegion test = new ProtectedCuboidRegion("dummy",
-                        new BlockVector(ox-pathSize,floorLevel,oz-pathSize),
-                        new BlockVector(ox+pathSize,topLevel, oz+pathSize));
+                        new BlockVector(ox- wallSize,floorLevel,oz- wallSize),
+                        new BlockVector(ox+ wallSize,topLevel, oz+ wallSize));
                 boolean valid = true;
                 ApplicableRegionSet set = regions.getApplicableRegions(test);
                 for(ProtectedRegion r: set)
@@ -173,8 +174,8 @@ public class GeneratingMaze
                 }
                 else
                 {
-                    setBlocks(new BlockVector(ox-pathSize,floorLevel+1,oz-pathSize),
-                            new BlockVector(ox+pathSize,topLevel,oz+pathSize), true);
+                    setBlocks(new BlockVector(ox- wallSize,floorLevel+1,oz- wallSize),
+                            new BlockVector(ox+ wallSize,topLevel,oz+ wallSize), true);
                     cells[col][row] = new MazeCell();
                     unvisited.add(new MazePos(col, row));
                 }
@@ -247,23 +248,23 @@ public class GeneratingMaze
                 MazeCell override = openings.getOrDefault(new MazePos(col, row), blank);
                 if(cur.isConnectedPosX()||override.isConnectedPosX())
                 {
-                    setBlocks(new BlockVector(ox+pathSize,floorLevel+1,oz-wallSize),
-                           new BlockVector(ox+pathSize, topLevel,oz+wallSize));
+                    setBlocks(new BlockVector(ox+ wallSize,floorLevel+1,oz- pathSize),
+                           new BlockVector(ox+ wallSize, topLevel,oz+ pathSize));
                 }
                 if(cur.isConnectedNegX()||override.isConnectedNegX())
                 {
-                    setBlocks(new BlockVector(ox-pathSize,floorLevel+1,oz-wallSize),
-                            new BlockVector(ox-pathSize, topLevel,oz+wallSize));
+                    setBlocks(new BlockVector(ox- wallSize,floorLevel+1,oz- pathSize),
+                            new BlockVector(ox- wallSize, topLevel,oz+ pathSize));
                 }
                 if(cur.isConnectedPosZ()||override.isConnectedPosZ())
                 {
-                    setBlocks(new BlockVector(ox-wallSize,floorLevel+1,oz+pathSize),
-                            new BlockVector(ox+wallSize, topLevel,oz+pathSize));
+                    setBlocks(new BlockVector(ox- pathSize,floorLevel+1,oz+ wallSize),
+                            new BlockVector(ox+ pathSize, topLevel,oz+ wallSize));
                 }
                 if(cur.isConnectedNegZ()||override.isConnectedNegZ())
                 {
-                    setBlocks(new BlockVector(ox-wallSize,floorLevel+1,oz-pathSize),
-                            new BlockVector(ox+wallSize, topLevel,oz-pathSize));
+                    setBlocks(new BlockVector(ox- pathSize,floorLevel+1,oz- wallSize),
+                            new BlockVector(ox+ pathSize, topLevel,oz- wallSize));
                 }
             }
         }

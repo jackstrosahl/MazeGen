@@ -3,6 +3,7 @@ package com.meepcraft.mazegen.commands;
 import com.meepcraft.mazegen.Main;
 import com.meepcraft.mazegen.util.GeneratingMaze;
 import com.meepcraft.mazegen.util.MazeData;
+import com.sun.tools.javac.jvm.Gen;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -31,6 +32,7 @@ public class CommandMaze implements CommandExecutor
         helpStrings.put("delete", " <maze>: Deletes <maze>, cancels regeneration, and removes walls.  Call this " +
                 "BEFORE removing any WG regions with flag 'maze-gen':DENY in this maze.");
         helpStrings.put("interval"," <maze> <interval>: Sets <maze> to regenerate every <interval> minute(s).");
+        helpStrings.put("pathsize", " <maze> <pathsize>: Sets <maze> to have paths with radius <pathsize>.");
         helpStrings.put("gen"," <maze>: Regenerates <maze> immediately.");
         helpStrings.put("list",": lists all mazes.");
         helpStrings.put("<maze>",": Displays information on <maze>.");
@@ -244,6 +246,51 @@ public class CommandMaze implements CommandExecutor
                 editing.put(player.getUniqueId(), args[1]);
                 player.sendMessage(Main.PREFIX+"Openings removed, you can now specify new ones by clicking" +
                         " on walls that should not generate.");
+                break;
+            }
+            case "pathsize":
+            {
+                if (args.length < 3)
+                {
+                    sender.sendMessage(Main.PREFIX + "Please specify a maze and path size : " +
+                            "/maze pathsize <name> <path size>");
+                    return true;
+                }
+                MazeData data = main.mazes.get(args[1]);
+                if (data == null)
+                {
+                    sender.sendMessage(Main.PREFIX + "Sorry, there is no maze under that name.");
+                    return true;
+                }
+                int pathSize;
+                try
+                {
+                    pathSize = Integer.parseInt(args[2]);
+                    if (pathSize < 0) throw new NumberFormatException();
+                } catch (NumberFormatException e)
+                {
+                    sender.sendMessage(Main.PREFIX + "That path size is incorrect.");
+                    return true;
+                }
+                // Remove old walls
+                GeneratingMaze generatingMaze = new GeneratingMaze(main, data,
+                        null, "", false);
+                generatingMaze.removeWalls();
+
+                // Set new path size
+                data.setPathSize(pathSize);
+                data.getOpenings().clear();
+
+                // Generate on new size
+                generatingMaze = new GeneratingMaze(main, data,
+                        null, "", false);
+                generatingMaze.run();
+
+                main.saveData();
+
+                sender.sendMessage(Main.PREFIX+args[1]+"'s paths now have a radius of "+pathSize);
+                sender.sendMessage(Main.PREFIX+"Its openings have been reset.  Run /maze openings "+args[1]+" again to " +
+                        "set them.");
                 break;
             }
             default:
